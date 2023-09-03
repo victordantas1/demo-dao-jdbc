@@ -1,13 +1,24 @@
 package model.dao.impl;
 
+import db.DB;
+import db.DbException;
 import model.dao.SellerDao;
 import model.entities.Department;
 import model.entities.Seller;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 public class SellerDaoJDBC implements SellerDao {
 
+    private Connection conn;
+
+    public SellerDaoJDBC(Connection conn) {
+        this.conn = conn;
+    }
 
     @Override
     public void insert(Seller obj) {
@@ -25,8 +36,39 @@ public class SellerDaoJDBC implements SellerDao {
     }
 
     @Override
-    public Department findById(Integer id) {
-        return null;
+    public Seller findById(Integer id) {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+        try{
+           st =  conn.prepareStatement("SELECT seller.*, department.Name as DepName "
+                                        + "FROM seller INNER JOIN department "
+                                        + "ON seller.DepartmentId = department.Id "
+                                        + "WHERE seller.Id = ?");
+           st.setInt(1, id);
+           rs = st.executeQuery();
+
+           if(rs.next()) {
+               Department dep = new Department();
+               dep.setName(rs.getString("DepName"));
+               dep.setId(rs.getInt("DepartmentId"));
+
+               Seller seller = new Seller();
+               seller.setName(rs.getString("Name"));
+               seller.setEmail(rs.getString("Email"));
+               seller.setBithDate(rs.getDate("BirthDate"));
+               seller.setBaseSalary(rs.getDouble("BaseSalary"));
+               seller.setDepartment(dep);
+               seller.setId(rs.getInt("Id"));
+
+               return seller;
+           }
+           else {
+               return null;
+           }
+        } catch (SQLException e){
+            throw new DbException(e.getMessage());
+        }
+
     }
 
     @Override
