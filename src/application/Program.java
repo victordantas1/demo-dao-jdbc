@@ -39,8 +39,8 @@ public class Program {
         seller.setName("Robert Jonson");
         sellerDao.update(seller);
         System.out.println("Update completed");
+
+        System.out.println("\n=== TEST5 seller delete ===");
+        sellerDao.deleteById(8);
     }
-
-
-
 }
